@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "start": "node ./bin/www"
+    "build": "prisma generate --config prisma7.config.ts && tsc",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
@@ -28,6 +29,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",
     "prisma": "^7.10.1",
     "tsx": "^4.23.15",

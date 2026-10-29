@@ -7,11 +7,12 @@ import { authorizeRoles } from './middleware/authorize.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 
 const app: Express = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
+const allowedOrigins = (process.env.FRONTENDURL ?? 'http://localhost:8081');
 
 app.use(
     cors({
-        origin: 'http://localhost:8081',
+        origin: allowedOrigins,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
     }),
@@ -60,5 +61,5 @@ app.get(
 );
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
