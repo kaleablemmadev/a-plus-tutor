@@ -1,0 +1,279 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                              String                   @id @default(uuid())
+  username                        String                   @unique
+  email                           String                   @unique
+  phoneNumber                     String                   @unique
+  passwordHash                    String
+  role                            Role                     @default(PARENT)
+  emailVerified                   Boolean                  @default(false)
+  fullName                        String
+  gender                          Gender?
+  city                            String?
+  subCity                         String?
+  woreda                          String?
+  village                         String?
+  profilePicture                  String?
+  createdAt                       DateTime                 @default(now())
+  updatedAt                       DateTime                 @updatedAt
+  documentsReviewed               ApplicationDocument[]    @relation("DocumentReviewer")
+  emailVerificationTokens         EmailVerificationToken[]
+  invitationVerificationsReviewed InvitationVerification[] @relation("InvitationReviewer")
+  refreshTokens                   RefreshToken[]
+  reviewedApplications            TutorApplication[]       @relation("ApplicationReviewer")
+  tutorApplications               TutorApplication[]
+  applicationReviewsWritten       TutorApplicationReview[] @relation("ApplicationReviewAuthor")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model TutorApplication {
+  id                      String                            @id @default(uuid())
+  userId                  String
+  educationStatus         EducationStatus
+  status                  TutorApplicationStatus            @default(DRAFT)
+  submittedAt             DateTime?
+  reviewedAt              DateTime?
+  reviewedById            String?
+  createdAt               DateTime                          @default(now())
+  updatedAt               DateTime                          @updatedAt
+  documents               ApplicationDocument[]
+  additionalSkills        ApplicationSkill[]
+  invitationVerifications InvitationVerification[]
+  reviewer                User?                             @relation("ApplicationReviewer", fields: [reviewedById], references: [id])
+  user                    User                              @relation(fields: [userId], references: [id])
+  excludedSubjects        TutorApplicationExcludedSubject[]
+  teachableGrades         TutorApplicationGrade[]
+  preferredGrades         TutorApplicationPreferredGrade[]
+  reviewHistory           TutorApplicationReview[]
+  teachableSubjects       TutorApplicationSubject[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([educationStatus])
+  @@index([reviewedById])
+}
+
+model Subject {
+  id          String                            @id @default(uuid())
+  name        String                            @unique
+  isActive    Boolean                           @default(true)
+  createdAt   DateTime                          @default(now())
+  updatedAt   DateTime                          @updatedAt
+  excludedBy  TutorApplicationExcludedSubject[]
+  teachableBy TutorApplicationSubject[]
+
+  @@index([isActive])
+}
+
+model TutorApplicationSubject {
+  applicationId String
+  subjectId     String
+  createdAt     DateTime         @default(now())
+  application   TutorApplication @relation(fields: [applicationId], references: [id])
+  subject       Subject          @relation(fields: [subjectId], references: [id])
+
+  @@id([applicationId, subjectId])
+  @@index([subjectId])
+}
+
+model TutorApplicationExcludedSubject {
+  applicationId String
+  subjectId     String
+  createdAt     DateTime         @default(now())
+  application   TutorApplication @relation(fields: [applicationId], references: [id])
+  subject       Subject          @relation(fields: [subjectId], references: [id])
+
+  @@id([applicationId, subjectId])
+  @@index([subjectId])
+}
+
+model Grade {
+  id          String                           @id @default(uuid())
+  name        String                           @unique
+  sortOrder   Int                              @unique
+  isActive    Boolean                          @default(true)
+  createdAt   DateTime                         @default(now())
+  updatedAt   DateTime                         @updatedAt
+  teachableBy TutorApplicationGrade[]
+  preferredBy TutorApplicationPreferredGrade[]
+
+  @@index([isActive])
+}
+
+model TutorApplicationGrade {
+  applicationId String
+  gradeId       String
+  createdAt     DateTime         @default(now())
+  application   TutorApplication @relation(fields: [applicationId], references: [id])
+  grade         Grade            @relation(fields: [gradeId], references: [id])
+
+  @@id([applicationId, gradeId])
+  @@index([gradeId])
+}
+
+model TutorApplicationPreferredGrade {
+  applicationId String
+  gradeId       String
+  createdAt     DateTime         @default(now())
+  application   TutorApplication @relation(fields: [applicationId], references: [id])
+  grade         Grade            @relation(fields: [gradeId], references: [id])
+
+  @@id([applicationId, gradeId])
+  @@index([gradeId])
+}
+
+model ApplicationDocument {
+  id                 String                     @id @default(uuid())
+  applicationId      String
+  type               ApplicationDocumentType
+  title              String?
+  storageKey         String                     @unique
+  originalFilename   String
+  mimeType           String
+  sizeBytes          Int
+  verificationStatus DocumentVerificationStatus @default(PENDING)
+  verificationNote   String?
+  verifiedAt         DateTime?
+  reviewedById       String?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  application        TutorApplication           @relation(fields: [applicationId], references: [id])
+  reviewer           User?                      @relation("DocumentReviewer", fields: [reviewedById], references: [id])
+
+  @@index([applicationId])
+  @@index([applicationId, type])
+  @@index([verificationStatus])
+}
+
+model ApplicationSkill {
+  id            String           @id @default(uuid())
+  applicationId String
+  name          String
+  description   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  application   TutorApplication @relation(fields: [applicationId], references: [id])
+
+  @@index([applicationId])
+}
+
+model InvitationVerification {
+  id                 String                       @id @default(uuid())
+  applicationId      String
+  type               InvitationType
+  claimedCount       Int                          @default(0)
+  status             InvitationVerificationStatus @default(PENDING)
+  evidenceStorageKey String?
+  reviewNote         String?
+  reviewedAt         DateTime?
+  reviewedById       String?
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+  application        TutorApplication             @relation(fields: [applicationId], references: [id])
+  reviewer           User?                        @relation("InvitationReviewer", fields: [reviewedById], references: [id])
+
+  @@unique([applicationId, type])
+  @@index([status])
+  @@index([reviewedById])
+}
+
+model TutorApplicationReview {
+  id            String                 @id @default(uuid())
+  applicationId String
+  reviewerId    String
+  status        TutorApplicationStatus
+  note          String?
+  createdAt     DateTime               @default(now())
+  application   TutorApplication       @relation(fields: [applicationId], references: [id])
+  reviewer      User                   @relation("ApplicationReviewAuthor", fields: [reviewerId], references: [id])
+
+  @@index([applicationId, createdAt])
+  @@index([reviewerId])
+}
+
+enum Role {
+  ADMIN
+  PARENT
+  TUTOR
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum EducationStatus {
+  NONGRADUATE
+  GRADUATE
+}
+
+enum TutorApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ApplicationDocumentType {
+  TRANSCRIPT_GRADE_9_12
+  NATIONAL_EXAM_GRADE_10
+  NATIONAL_EXAM_GRADE_12
+  TUTORING_CV
+  KEBELE_ID
+  STUDENT_ID
+  NATIONAL_ID
+  DIPLOMA_CERTIFICATE
+  DEGREE_CERTIFICATE
+  ADDITIONAL_CERTIFICATE
+}
+
+enum DocumentVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum InvitationType {
+  TELEGRAM_MEMBERS
+  APP_INVITATIONS
+}
+
+enum InvitationVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
