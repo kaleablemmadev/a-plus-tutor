@@ -240,13 +240,13 @@ export default function TutorHomeScreen() {
                         </Pressable>
 
                         <Text style={styles.helperText}>
-                            Applications aren't submitted yet in this prototype.
+                            Applications aren&apos;t submitted yet in this prototype.
                         </Text>
                     </View>
                 )}
 
                 <Text style={styles.footer}>
-                    Your skills can open someone's future.
+                    Your skills can open someone&apos;s future.
                 </Text>
             </ScrollView>
 
