@@ -166,9 +166,7 @@ export default function LoginScreen() {
                         <View style={styles.signupRow}>
                             <Text style={styles.signupText}>New to A Plus Tutor? </Text>
                             <Pressable
-                                onPress={() => {
-                                    setError('Registration screen is coming next.');
-                                }}
+                                onPress={() => router.push('/register')}
                             >
                                 <Text style={styles.textAction}>Create account</Text>
                             </Pressable>
