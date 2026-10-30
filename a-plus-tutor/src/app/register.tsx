@@ -40,6 +40,7 @@ export default function RegisterScreen() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
 
     function updateField<K extends keyof RegisterTutorInput>(
         field: K,
@@ -97,13 +98,36 @@ export default function RegisterScreen() {
                 phoneNumber: form.phoneNumber.trim(),
             });
 
-            router.replace('/');
+            setSuccess(true);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unable to create your account. Please try again.');
         } finally {
             setLoading(false);
-            router.push('/');
         }
+    }
+
+    if (success) {
+        return (
+            <View style={styles.container}>
+                <View style={styles.successContainer}>
+                    <Text style={styles.successIcon}>✓</Text>
+
+                    <Text style={styles.title}>Registration Successful!</Text>
+
+                    <Text style={styles.subtitle}>
+                        Your account has been created successfully.
+                        You can now continue to login using your new credentials.
+                    </Text>
+
+                    <Pressable
+                        style={styles.button}
+                        onPress={() => router.replace('/')}
+                    >
+                        <Text style={styles.buttonText}>Continue to Login</Text>
+                    </Pressable>
+                </View>
+            </View>
+        );
     }
 
     return (
@@ -377,6 +401,51 @@ function OptionButton({
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: colors.background,
+    },
+    successContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+    },
+    successIcon: {
+        fontSize: 48,
+        color: '#2E9D61',
+        marginBottom: 20,
+    },
+    title: {
+        fontSize: 26,
+        fontWeight: '700',
+        color: colors.heading,
+        textAlign: 'center',
+        marginBottom: 12,
+    },
+
+    subtitle: {
+        fontSize: 15,
+        color: colors.text,
+        textAlign: 'center',
+        lineHeight: 23,
+        marginBottom: 32,
+    },
+
+    button: {
+        backgroundColor: colors.primary,
+        paddingVertical: 16,
+        paddingHorizontal: 28,
+        borderRadius: 12,
+        width: '100%',
+        alignItems: 'center',
+    },
+
+    buttonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
     safeArea: {
         flex: 1,
         backgroundColor: colors.background,
@@ -433,19 +502,6 @@ const styles = StyleSheet.create({
         fontWeight: '800',
         letterSpacing: 1.5,
         marginBottom: 10,
-    },
-    title: {
-        color: colors.heading,
-        fontSize: 32,
-        lineHeight: 39,
-        fontWeight: '800',
-        letterSpacing: -0.8,
-    },
-    subtitle: {
-        color: colors.text,
-        fontSize: 14,
-        lineHeight: 22,
-        marginTop: 9,
     },
     card: {
         backgroundColor: colors.surface,
