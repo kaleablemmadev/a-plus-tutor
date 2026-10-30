@@ -8,7 +8,7 @@ import authRoutes from './routes/auth.routes.js';
 
 const app: Express = express();
 const PORT = Number(process.env.PORT) || 3000;
-const allowedOrigins = (process.env.FRONTENDURL ?? 'http://localhost:8081');
+const allowedOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:8081').split(',').map((origin) => origin.trim()).filter(Boolean);
 
 app.use(
     cors({
